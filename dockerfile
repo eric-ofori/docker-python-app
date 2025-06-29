@@ -13,3 +13,4 @@ COPY app.py .
 
 # Run FastAPI app using uvicorn
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+
