@@ -14,12 +14,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Install and run Gitleaks (fixed URL for latest binary name)
+      # Step 2: Install and run Gitleaks (Dynamic, version-safe)
       - name: Install Gitleaks
         run: |
-          wget https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks_Linux_x86_64 -O gitleaks
-          chmod +x gitleaks
-          sudo mv gitleaks /usr/local/bin/gitleaks
+          wget https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks_$(wget -qO- https://api.github.com/repos/gitleaks/gitleaks/releases/latest | grep tag_name | cut -d '"' -f 4 | sed 's/v//')_linux_x64.tar.gz -O gitleaks.tar.gz
+          mkdir gitleaks-bin
+          tar -xzf gitleaks.tar.gz -C gitleaks-bin
+          chmod +x gitleaks-bin/gitleaks
+          sudo mv gitleaks-bin/gitleaks /usr/local/bin/gitleaks
 
       - name: Run Gitleaks Scan
         run: gitleaks detect --source . --verbose
