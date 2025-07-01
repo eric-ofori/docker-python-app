@@ -1,2 +1,4 @@
-fastapi==0.110.0
+ffastapi==0.110.0
 uvicorn==0.27.0.post1
+starlette==0.40.0
+setuptools==78.1.1
