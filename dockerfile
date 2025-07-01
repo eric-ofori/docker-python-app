@@ -1,22 +1,25 @@
-FROM python:3.10-slim-bullseye
+# Use an official lightweight Python base image (Debian 12 based)
+FROM python:3.10-slim-bookworm
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
+# Set working directory
 WORKDIR /app
 
-RUN apt-get update && \
-  apt-get upgrade -y && \
-  apt-get install --no-install-recommends -y build-essential gcc libffi-dev && \
+# Install security updates for Debian system packages
+RUN apt-get update && apt-get upgrade -y --no-install-recommends && \
+  apt-get install -y --no-install-recommends gcc libffi-dev build-essential && \
   apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir --upgrade pip setuptools==78.1.1 starlette==0.40.0
-
+# Copy requirements
 COPY requirements.txt .
+
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app.py .
+# Copy application code
+COPY . .
 
+# Expose port
 EXPOSE 8000
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Command to run the app
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
