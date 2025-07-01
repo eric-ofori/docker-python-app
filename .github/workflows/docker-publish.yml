@@ -14,7 +14,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Install and run Gitleaks (Dynamic, version-safe)
+      # Step 2: Install and run Gitleaks for secrets scanning
       - name: Install Gitleaks
         run: |
           wget https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks_$(wget -qO- https://api.github.com/repos/gitleaks/gitleaks/releases/latest | grep tag_name | cut -d '"' -f 4 | sed 's/v//')_linux_x64.tar.gz -O gitleaks.tar.gz
@@ -26,14 +26,14 @@ jobs:
       - name: Run Gitleaks Scan
         run: gitleaks detect --source . --verbose
 
-      # Step 3: Log in to Docker Hub
+      # Step 3: Docker Hub login
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Step 4: Set up Docker Buildx
+      # Step 4: Setup Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -45,7 +45,7 @@ jobs:
           push: false
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/my-fastapi-app:latest
 
-      # Step 6: Install Trivy
+      # Step 6: Install Trivy for vulnerability scanning
       - name: Install Trivy
         run: |
           sudo apt-get update
@@ -55,7 +55,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install trivy -y
 
-      # Step 7: Run Trivy vulnerability scan on Docker image
+      # Step 7: Run Trivy scan on built Docker image
       - name: Run Trivy scan on Docker image
         run: trivy image --exit-code 1 --severity HIGH,CRITICAL ${{ secrets.DOCKERHUB_USERNAME }}/my-fastapi-app:latest
 
