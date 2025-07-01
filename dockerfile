@@ -1,27 +1,35 @@
-# Use official Python slim image
-FROM python:3.10-slim
+# --- Stage 1: Build dependencies and Python wheels ---
+FROM python:3.10-slim AS build
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-# Install build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends gcc && \
-  apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Set work directory
+# Set working directory
 WORKDIR /app
 
-# Install Python dependencies
+# Install pip tools
+RUN pip install --upgrade pip
+
+# Copy requirement files
 COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip setuptools && \
-  pip install --no-cache-dir -r requirements.txt
 
-# Copy project files
-COPY . .
+# Pre-build wheels (optimized for distroless)
+RUN pip wheel --wheel-dir /wheels -r requirements.txt
 
-# Expose FastAPI port
-EXPOSE 8000
+# --- Stage 2: Final image using Distroless ---
+FROM gcr.io/distroless/python3-debian12
 
-# Command to run the app
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Working directory
+WORKDIR /app
+
+# Copy app source code
+COPY app.py .
+
+# Copy pre-built wheels and install them
+COPY --from=build /wheels /wheels
+COPY --from=build /app/requirements.txt .
+
+# Install packages (no pip needed in distroless, using Python directly)
+ENV PYTHONPATH=/app
+RUN python3 -m pip install --no-index --find-links=/wheels -r requirements.txt
+
+# Set FastAPI startup command using Uvicorn
+CMD ["-m", "uvicorn", "app:app", "--host", "0.0.0.0", "--port", "80"]
+ENTRYPOINT ["python3"]
