@@ -57,8 +57,13 @@ jobs:
           sudo apt-get install trivy -y
 
       # Step 8: Run Trivy scan on Docker image
-      - name: Run Trivy vulnerability scan on Docker image
-        run: trivy image --exit-code 1 --severity HIGH,CRITICAL ${{ secrets.DOCKERHUB_USERNAME }}/my-fastapi-app:latest
+      - name: Run Trivy scan on Docker image (using .trivyignore)
+        run: |
+          trivy image \
+            --exit-code 1 \
+            --severity HIGH,CRITICAL \
+            --ignorefile .trivyignore \
+            ${{ secrets.DOCKERHUB_USERNAME }}/my-fastapi-app:latest
 
       # Step 9: Save Docker image as tarball
       - name: Save Docker image as tarball

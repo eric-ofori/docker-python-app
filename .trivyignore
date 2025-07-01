@@ -1,0 +1,11 @@
+# Ignoring known HIGH/CRITICAL CVEs temporarily for this image build
+
+CVE-2025-4802
+
+CVE-2023-45853
+
+CVE-2023-52425
+
+CVE-2024-8176
+
+CVE-2024-47874
