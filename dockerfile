@@ -1,35 +1,29 @@
-# Stage 1 - Build dependencies
-
+# Stage 1: Build with Python
 FROM python:3.10-slim AS builder
 
 
 
 WORKDIR /app
 
-# Install system build tools
+# System build tools (for packages like uvicorn)
 RUN apt-get update && apt-get install -y build-essential gcc
 
-# Install Python dependencies
+# Install dependencies
 COPY requirements.txt .
-RUN pip wheel --wheel-dir=/app/wheels -r requirements.txt
-
-
-# Stage 2 - Final runtime image (Distroless)
-FROM gcr.io/distroless/python3-debian12
-
-
-WORKDIR /app
+RUN pip install --upgrade pip
+RUN pip install --prefix=/install -r requirements.txt
 
 # Copy app code
 COPY app.py .
 
-# Copy built Python packages (wheels) and requirements
-COPY requirements.txt .
-COPY --from=builder /app/wheels /wheels
+# Stage 2: Final Distroless Image
+FROM gcr.io/distroless/python3-debian12
 
-# Install Python dependencies from built wheels (NO pip install over network inside distroless)
-RUN python3 -m pip install --no-index --find-links=/wheels -r requirements.txt
+WORKDIR /app
 
+# Copy Python site packages and app
+COPY --from=builder /install /usr/local
+COPY --from=builder /app .
 
 EXPOSE 8000
 
