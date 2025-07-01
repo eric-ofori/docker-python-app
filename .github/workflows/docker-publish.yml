@@ -14,12 +14,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Step 2: Install and run Gitleaks (manual CLI install to avoid artifact upload issues)
+      # Step 2: Install and run Gitleaks (Manual CLI install, stable binary)
       - name: Install Gitleaks
         run: |
-          curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64 -o gitleaks
+          wget https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks_linux_x64 -O gitleaks
           chmod +x gitleaks
-          sudo mv gitleaks /usr/local/bin/
+          sudo mv gitleaks /usr/local/bin/gitleaks
 
       - name: Run Gitleaks Scan
         run: gitleaks detect --source . --verbose
