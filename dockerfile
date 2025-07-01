@@ -1,32 +1,31 @@
 FROM python:3.10-slim-bookworm
 
-# Set working directory
 WORKDIR /app
 
-# Install system build dependencies (build-essential, gcc, libffi-dev, etc.)
+# Install system packages needed for pip builds
 RUN apt-get update && \
   apt-get install -y --no-install-recommends \
-  build-essential \
   gcc \
+  g++ \
   libffi-dev \
   libssl-dev \
-  libpq-dev \
-  curl && \
-  apt-get clean && \
-  rm -rf /var/lib/apt/lists/*
+  build-essential \
+  curl \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements file first for layer caching
+# Upgrade pip + wheel first (Important!)
+RUN pip install --upgrade pip wheel setuptools
+
+# Copy requirements file
 COPY requirements.txt .
 
-# Install Python dependencies
-RUN pip install --upgrade pip setuptools && \
-  pip install --no-cache-dir -r requirements.txt
+# Install python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
+# Copy your app code
 COPY . .
 
-# Expose FastAPI port
 EXPOSE 8000
 
-# Run FastAPI app with Uvicorn
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
