@@ -29,4 +29,11 @@ EXPOSE 8000
 
 
 CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
-
+# Health check to ensure the app is running
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s \
+  CMD curl -f http://localhost:8000/ || exit 1
+# Metadata
+LABEL org.opencontainers.image.title="Python App"
+LABEL org.opencontainers.image.description="A simple Python app running in a distroless container"
+LABEL org.opencontainers.image.version="1.0"
+LABEL org.opencontainers.image.authors="eokd7"
